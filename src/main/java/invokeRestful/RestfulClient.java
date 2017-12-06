@@ -1,0 +1,122 @@
+package invokeRestful;
+
+import com.alibaba.fastjson.JSON;
+
+import com.alibaba.fastjson.JSONObject;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.HashMap;
+
+import java.util.Map;
+
+public class RestfulClient {
+
+	public static Logger log = LoggerFactory.getLogger(RestfulClient.class);
+	
+	public enum Method { GET, POST ,PUT,DELETE}
+
+	public static String invokRestFul(String url, String requestJson,String head,Method httpMethod) {
+
+		log.info("\n调用url:" + url+"\n调用报文:" + requestJson+"\n请求头:" + head);
+		CloseableHttpClient httpClient = HttpClients.createDefault();
+		final HttpRequestBase httpRequest=getHttpMethod(httpMethod);
+		httpRequest.setURI(URI.create(url));
+		JSONObject request = JSON.parseObject(requestJson);
+		JSONObject headJson = JSON.parseObject(head);
+		StringEntity entity = new StringEntity(request.toString(), "utf-8");
+		if(httpRequest instanceof HttpPost){
+			((HttpPost) httpRequest).setEntity(entity);
+		}
+		if(httpRequest instanceof HttpPut){
+			((HttpPut) httpRequest).setEntity(entity);
+		}
+
+		headJson.forEach((K, V) -> {
+			httpRequest.addHeader(K, (String) V);
+		});
+		CloseableHttpResponse httppHttpResponse = null;
+		try {
+			httppHttpResponse = httpClient.execute(httpRequest);
+		} catch (IOException e) {
+			log.error("调用接口错误");
+			log.error("\n调用url:" + url+"\n调用报文:" + requestJson+"\n请求头:" + head);
+			log.error(e.getMessage());
+		}
+		int statusCode=httppHttpResponse.getStatusLine().getStatusCode();
+		log.info("statusCode:"+statusCode);
+		HttpEntity result = null;
+		try {
+			if(200==statusCode){
+				result = httppHttpResponse.getEntity();				
+				String s= EntityUtils.toString(result);
+				//log.info(s);
+				return s;
+			}else{
+				Map<String, Object> errMap=new HashMap<String, Object>();
+				errMap.put("status", "999");
+				errMap.put("messages", "http状态码:"+statusCode);
+				return JSONUtil.mapToJson(errMap);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return e.getMessage();
+		}finally{
+			try {
+				httppHttpResponse.close();
+				httpClient.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+
+	}
+	
+	private static HttpRequestBase getHttpMethod(Method method){
+		switch(method){
+			case POST:
+				return new HttpPost();
+			case GET:
+				return new HttpGet();
+			case PUT:
+				return new HttpPut();
+			case DELETE:
+				return new HttpDelete();
+			default:
+				return null;
+		}
+	}
+
+
+
+	public static String invokRestFul(JsonResquestEntity en,Method httpMethod) {
+		log.info("invokRestFul");
+		JSONObject request = new JSONObject(en.getRequest());
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.putAll(en.getHead());
+		// en.getHead().forEach((K,V)->map.put(K, V));
+		JSONObject head = new JSONObject(map);
+		String url = en.getUrl();
+
+		return invokRestFul(url, request.toString(), head.toString(),httpMethod);
+
+	}
+
+
+
+
+	
+
+}
