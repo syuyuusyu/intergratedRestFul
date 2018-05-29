@@ -10,9 +10,11 @@ public interface JsonResponseEntity {
 
 	public void init(String jsonStr);
 	
-	public boolean status();
+	//public boolean status();
 
-	public String getStatus();
+	public int getStatusCode();
+
+	public void setStatusCode(int code);
 	
 	public Class<?> getResponseClass();
 	

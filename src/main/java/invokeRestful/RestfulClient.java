@@ -27,7 +27,7 @@ public class RestfulClient {
 	
 	public enum Method { GET, POST ,PUT,DELETE}
 
-	public static String invokRestFul(String url, String requestJson,String head,Method httpMethod) {
+	public static Map<String,Object> invokRestFul(String url, String requestJson,String head,Method httpMethod) {
 
 		log.info("\n调用url:" + url+"\n调用报文:" + requestJson+"\n请求头:" + head);
 		CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -56,22 +56,17 @@ public class RestfulClient {
 		}
 		int statusCode=httppHttpResponse.getStatusLine().getStatusCode();
 		log.info("statusCode:"+statusCode);
+		Map<String,Object> resultMap=new HashMap<>();
 		HttpEntity result = null;
+		resultMap.put("statusCode",statusCode);
 		try {
-			if(200==statusCode){
-				result = httppHttpResponse.getEntity();				
-				String s= EntityUtils.toString(result);
-				//log.info(s);
-				return s;
-			}else{
-				Map<String, Object> errMap=new HashMap<String, Object>();
-				errMap.put("status", "999");
-				errMap.put("messages", "http状态码:"+statusCode);
-				return JSONUtil.mapToJson(errMap);
-			}
+			result = httppHttpResponse.getEntity();
+			String s= EntityUtils.toString(result);
+			resultMap.put("result",s);
+			return resultMap;
 		} catch (Exception e) {
-			e.printStackTrace();
-			return e.getMessage();
+			resultMap.put("result",e.getMessage());
+			return resultMap;
 		}finally{
 			try {
 				httppHttpResponse.close();
@@ -101,7 +96,7 @@ public class RestfulClient {
 
 
 
-	public static String invokRestFul(JsonResquestEntity en,Method httpMethod) {
+	public static Map<String, Object> invokRestFul(JsonResquestEntity en,Method httpMethod) {
 		log.info("invokRestFul");
 		JSONObject request = new JSONObject(en.getRequest());
 		Map<String, Object> map = new HashMap<String, Object>();

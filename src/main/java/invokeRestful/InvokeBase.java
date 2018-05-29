@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -85,7 +86,8 @@ public  class InvokeBase<Q extends JsonResquestEntity,P extends JsonResponseEnti
     public final String invoke(){
 		Objects.nonNull(requestEntity);
         beforeCall();
-        this.result=RestfulClient.invokRestFul(requestEntity,httpMethod);
+		Map<String,Object> rmap= RestfulClient.invokRestFul(requestEntity,httpMethod);
+		this.result=(String)rmap.get("result");
         afterCall();
         if(resultFun!=null){
         	try {

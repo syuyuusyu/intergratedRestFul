@@ -1,18 +1,14 @@
 package invokeRestful;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class CommonResponseEntity implements JsonResponseEntity{
 
     private String result;
 
+    private int statusCode;
+
     private Class<?> clazz;
 
-    private Map<String,Object> map=new HashMap<>();
 
 
     @Override
@@ -20,30 +16,7 @@ public class CommonResponseEntity implements JsonResponseEntity{
         result=jsonStr;
     }
 
-    @Override
-    public boolean status() {
-        try {
-            JSONObject json= JSON.parseObject(result);
-            if(json.containsKey("status") && json.getString("status").equals("999")){
-                return false;
-            }else{
-                return true;
-            }
-        }catch (Exception e){
-            try{
-                JSON.parseArray(result);
-                return true;
-            }catch (Exception e2) {
-                return false;
-            }
-        }
 
-    }
-
-    @Override
-    public String getStatus() {
-        return null;
-    }
 
     @Override
     public Class<?> getResponseClass() {
@@ -55,8 +28,14 @@ public class CommonResponseEntity implements JsonResponseEntity{
         return result;
     }
 
+    @Override
+    public int getStatusCode() {
+        return statusCode;
+    }
 
-
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
 
     public Class<?> getClazz() {
         return clazz;
