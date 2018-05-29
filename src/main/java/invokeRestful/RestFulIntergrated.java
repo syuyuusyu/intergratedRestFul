@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RestFulIntegrage {
+public class RestFulIntergrated {
 
 
     public  void invoke(List<InvokeEntity> ens,final ThreadResultData trd){
@@ -32,7 +32,9 @@ public class RestFulIntegrage {
                 .setMethod(en.getMethod())
                 .setRequestBody(en.parseBody())
                 .setRequstHead(en.parseHead());
-        en.transferMap().forEach(invoke::putTransferMap);
+        if(en.transferMap()!=null){
+            en.transferMap().forEach(invoke::putTransferMap);
+        }
         if(en.invokeCompleteEvent()!=null){
             invoke.addEvent(en.invokeCompleteEvent());
         }
