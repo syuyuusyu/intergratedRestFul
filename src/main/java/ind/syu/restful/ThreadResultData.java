@@ -1,4 +1,4 @@
-package invokeRestful;
+package ind.syu.restful;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

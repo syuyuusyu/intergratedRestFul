@@ -1,4 +1,4 @@
-package invokeRestful;
+package ind.syu.restful;
 
 public class InvokeTimeOutException extends Exception {
 

@@ -1,4 +1,4 @@
-package invokeRestful;
+package ind.syu.restful;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;

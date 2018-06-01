@@ -1,4 +1,4 @@
-package invokeRestful;
+package ind.syu.restful;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package invokeRestful;
+package ind.syu.restful;
 
 import net.sf.ezmorph.MorphException;
 import net.sf.ezmorph.object.AbstractObjectMorpher;

@@ -1,4 +1,4 @@
-package invokeRestful;
+package ind.syu.restful;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,8 +87,8 @@ public  class InvokeBase<Q extends JsonResquestEntity,P extends JsonResponseEnti
 		Objects.nonNull(requestEntity);
         beforeCall();
 		Map<String,Object> rmap= RestfulClient.invokRestFul(requestEntity,httpMethod);
-		this.result=(String)rmap.get("result");
         afterCall();
+		this.result=(String)rmap.get("result");
         if(resultFun!=null){
         	try {
         		this.result=resultFun.apply(this.result);
@@ -103,7 +103,9 @@ public  class InvokeBase<Q extends JsonResquestEntity,P extends JsonResponseEnti
 				e.printStackTrace();
 			}        	
         }
+        int statusCode= (int) rmap.get("statusCode");
         responseEntity.init(this.result);
+		responseEntity.setStatusCode(statusCode);
         //log.info(invokeName+"-接口返回:"+result);
         return this.result;
     }

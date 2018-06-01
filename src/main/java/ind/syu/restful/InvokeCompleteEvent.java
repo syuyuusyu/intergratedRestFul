@@ -1,4 +1,4 @@
-package invokeRestful;
+package ind.syu.restful;
 
 
 @FunctionalInterface

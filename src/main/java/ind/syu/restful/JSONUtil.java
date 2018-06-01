@@ -1,4 +1,4 @@
-package invokeRestful;
+package ind.syu.restful;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
