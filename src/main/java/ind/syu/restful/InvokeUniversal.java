@@ -23,8 +23,10 @@ public class InvokeUniversal extends InvokeBase<CommonRequestEntity,CommonRespon
                 break;
             case "get":
                 this.setHttpMethod(RestfulClient.Method.GET);
+                break;
             case "put":
                 this.setHttpMethod(RestfulClient.Method.PUT);
+                break;
             case "delete":
                 this.setHttpMethod(RestfulClient.Method.DELETE);
                 break;
