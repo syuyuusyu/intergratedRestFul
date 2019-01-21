@@ -3,12 +3,12 @@ package ind.syu.restful;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.springframework.util.StringUtils;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +39,7 @@ public class RestFulIntergrated {
             invoke.addEvent(en.invokeCompleteEvent());
         }
         if(!StringUtils.isEmpty(en.getParseFun())){
-            invoke.setBiResultFun((resopne,result)->{
+            invoke.setResultFun(result->{
                 long time=System.currentTimeMillis();
                 //System.out.println("result = \n" + result);
                 String function=en.getParseFun();
@@ -47,23 +47,15 @@ public class RestFulIntergrated {
                 ScriptObjectMirror res=null;
 
                 try {
-                    ScriptEngine engine = new NashornScriptEngineFactory().getScriptEngine("--language=es6");
-
-                    engine.eval("var responseBody=" + result);
-                    engine.eval("var requestHead=" + resopne.get("requestHead"));
-
-                    engine.eval("var requestBody=" + resopne.get("requestBody"));
-                    engine.eval("var responseHead=" + resopne.get("responseHead"));
-
-                    Object responseBody = engine.get("responseBody");
-                    Object requestHead = engine.get("requestHead");
-                    Object requestBody = engine.get("requestBody");
-                    Object responseHead = engine.get("responseHead");
-
+                    ScriptEngineManager manager = new ScriptEngineManager();
+                    ScriptEngine engine = manager.getEngineByName("javascript");
+                    engine.eval("var resultObj=" + result);
+                    engine.eval("var queryObj=" + en.parseBody());
+                    Object resultObj = engine.get("resultObj");
+                    Object queryObj = engine.get("queryObj");
                     engine.eval(function);
                     Invocable inv = (Invocable) engine;
-                    //response,responsehead,responsestatus,requesthead,requestdata,url
-                    res = (ScriptObjectMirror) inv.invokeFunction(funName, responseBody,responseHead,requestHead,requestBody);
+                    res = (ScriptObjectMirror) inv.invokeFunction(funName, resultObj,queryObj);
 
                 } catch (ScriptException e) {
                     e.printStackTrace();
@@ -76,24 +68,17 @@ public class RestFulIntergrated {
                 }else{
                     json=parseObj(res);
                 }
+                //System.out.println("json.toJSONString() = \n" + json.toJSONString());
                 System.out.println("time:"+ (System.currentTimeMillis()-time));
                 return json.toJSONString();
             });
         }
-
         if(en.next()!=null && en.next().size()>0){
             invoke.addEvent((data,trdd)->{
                 String result=data.getArrayJson();
-                boolean isArray=true;
-                JSONArray arrJson=null;
-                try {
-                    arrJson=JSON.parseArray(result);
-                }catch (Exception e){
-                    isArray=false;
-                }
-
-                for(int i=0;i< (isArray?arrJson.size():1);i++){
-                    JSONObject json= isArray?arrJson.getJSONObject(i):JSON.parseObject(result);
+                JSONArray arrJson=JSON.parseArray(result);
+                for(int i=0;i<arrJson.size();i++){
+                    JSONObject json=arrJson.getJSONObject(i);
                     en.next().stream().map(e->{
                         List<String> params=e.queryParams();
                         Map<String,String> queryMap=e.getQueryMap()!=null?e.getQueryMap():new HashMap<>();
@@ -119,33 +104,6 @@ public class RestFulIntergrated {
         }
         trd.addInvoker(invoke);
 
-    }
-
-    public  String applyFun(String function,String result){
-        String funName=getFunName(function);
-        ScriptObjectMirror res=null;
-
-        try {
-            ScriptEngine engine = new NashornScriptEngineFactory().getScriptEngine("--language=es6");
-            engine.eval("var result=" + result);
-            Object responseBody = engine.get("result");
-
-            engine.eval(function);
-            Invocable inv = (Invocable) engine;
-            res = (ScriptObjectMirror) inv.invokeFunction(funName, responseBody);
-
-        } catch (ScriptException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        JSON json=null;
-        if(res.isArray()){
-            json=parseArr(res);
-        }else{
-            json=parseObj(res);
-        }
-        return json.toJSONString();
     }
 
     private String getFunName(String fun){
