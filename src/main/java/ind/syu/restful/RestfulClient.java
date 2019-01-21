@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 
 import com.alibaba.fastjson.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
@@ -30,6 +32,9 @@ public class RestfulClient {
 	public static Map<String,Object> invokRestFul(String url, String requestJson,String head,Method httpMethod) {
 
 		log.info("\n调用url:" + url+"\n调用报文:" + requestJson+"\n请求头:" + head);
+		if(StringUtils.isEmpty(requestJson)){
+			requestJson="{}";
+		}
 		CloseableHttpClient httpClient = HttpClients.createDefault();
 		final HttpRequestBase httpRequest=getHttpMethod(httpMethod);
 		httpRequest.setURI(URI.create(url));
@@ -62,7 +67,17 @@ public class RestfulClient {
 		try {
 			result = httppHttpResponse.getEntity();
 			String s= EntityUtils.toString(result);
-			resultMap.put("result",s);
+			Header heads[] = httppHttpResponse.getAllHeaders();
+			Map<String,String> headMap=new HashMap<>();
+			for(Header h:heads){
+				headMap.put(h.getName(),h.getValue());
+			}
+			headMap.put("statusCode",String.valueOf(statusCode));
+			headMap.put("url",url);
+			resultMap.put("requestHead",head);
+			resultMap.put("requestBody",requestJson);
+			resultMap.put("responseHead",JSON.toJSON(headMap).toString());
+			resultMap.put("responseBody",s);
 			return resultMap;
 		} catch (Exception e) {
 			resultMap.put("result",e.getMessage());
